@@ -66,7 +66,7 @@ function App() {
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response || data.message || 'I received your message, but I\'m not sure how to respond.',
+        content: data.output || 'I received your message, but I\'m not sure how to respond.',
         isUser: false,
         timestamp: new Date(),
       };
