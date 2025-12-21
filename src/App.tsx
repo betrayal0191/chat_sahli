@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertCircle, Loader2, RotateCcw, Trash2 } from 'lucide-react';
+import { Send, Bot, User, AlertCircle, Loader2, RotateCcw, Trash2, Edit2, Check, X } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -21,6 +21,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -103,6 +105,27 @@ function App() {
   const deleteMessage = (messageId: string) => {
     setMessages(prev => prev.filter(msg => msg.id !== messageId));
   };
+
+  const startEditing = (message: Message) => {
+    setEditingId(message.id);
+    setEditingContent(message.content);
+  };
+
+  const saveEdit = (messageId: string) => {
+    if (!editingContent.trim()) return;
+    setMessages(prev => prev.map(msg =>
+      msg.id === messageId
+        ? { ...msg, content: editingContent.trim() }
+        : msg
+    ));
+    setEditingId(null);
+    setEditingContent('');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingContent('');
+  };
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -158,39 +181,78 @@ function App() {
               
               {/* Message Bubble */}
               <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${message.isUser ? 'order-1' : 'order-2'} relative`}>
-                <div
-                  className={`px-4 py-3 rounded-2xl ${
-                    message.isUser
-                      ? 'bg-blue-500 text-white rounded-br-md'
-                      : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
-                  }`}
-                >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
-                </div>
-                
-                {/* Message Actions */}
-                {hoveredMessageId === message.id && (
-                  <div className={`absolute top-0 flex gap-1 ${
-                    message.isUser ? '-left-20' : '-right-20'
-                  } opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
-                    {message.isUser && (
-                      <button
-                        onClick={() => resendMessage(message)}
-                        disabled={isLoading}
-                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Resend message"
-                      >
-                        <RotateCcw className="w-4 h-4 text-gray-600" />
-                      </button>
-                    )}
+                {editingId === message.id ? (
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      className={`flex-1 px-4 py-2 border rounded-2xl resize-none focus:outline-none focus:ring-2 text-sm ${
+                        message.isUser
+                          ? 'bg-blue-500 text-white border-blue-600 focus:ring-blue-400'
+                          : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
+                      }`}
+                    />
                     <button
-                      onClick={() => deleteMessage(message.id)}
-                      className="w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-colors duration-200"
-                      title="Delete message"
+                      onClick={() => saveEdit(message.id)}
+                      className="w-8 h-8 bg-green-100 hover:bg-green-200 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                      title="Save edit"
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Check className="w-4 h-4 text-green-600" />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                      title="Cancel edit"
+                    >
+                      <X className="w-4 h-4 text-gray-600" />
                     </button>
                   </div>
+                ) : (
+                  <>
+                    <div
+                      className={`px-4 py-3 rounded-2xl ${
+                        message.isUser
+                          ? 'bg-blue-500 text-white rounded-br-md'
+                          : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md shadow-sm'
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                    </div>
+
+                    {/* Message Actions */}
+                    {hoveredMessageId === message.id && (
+                      <div className={`absolute top-0 flex gap-1 ${
+                        message.isUser ? '-left-28' : '-right-28'
+                      } opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
+                        {message.isUser && (
+                          <>
+                            <button
+                              onClick={() => startEditing(message)}
+                              className="w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-colors duration-200"
+                              title="Edit message"
+                            >
+                              <Edit2 className="w-4 h-4 text-blue-600" />
+                            </button>
+                            <button
+                              onClick={() => resendMessage(message)}
+                              disabled={isLoading}
+                              className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Resend message"
+                            >
+                              <RotateCcw className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => deleteMessage(message.id)}
+                          className="w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-colors duration-200"
+                          title="Delete message"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
                 
                 <p className={`text-xs text-gray-500 mt-1 ${message.isUser ? 'text-right' : 'text-left'}`}>
