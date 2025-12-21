@@ -1,9 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertCircle, Loader2, RotateCcw, Trash2, Edit2, Check, X, Sparkles, Settings } from 'lucide-react';
-
-interface Message {
-  id: string;
-  content: string;
+import { Send, Bot, User, AlertCircle, Loader2, RotateCcw, Trash2, CreditCard as Edit2, Check, X, Sparkles, Settings } from 'lucide-react'  content: string;
   isUser: boolean;
   timestamp: Date;
 }
