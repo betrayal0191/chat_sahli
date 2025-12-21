@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
+import { Send, Bot, User, AlertCircle, Loader2, RotateCcw, Trash2 } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -20,6 +20,7 @@ function App() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,18 +32,21 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const sendMessage = async (messageContent?: string) => {
+    const content = messageContent || inputValue.trim();
+    if (!content || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue.trim(),
+      content: content,
       isUser: true,
       timestamp: new Date(),
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    if (!messageContent) {
+      setInputValue('');
+    }
     setIsLoading(true);
     setError(null);
 
@@ -90,6 +94,15 @@ function App() {
     }
   };
 
+  const resendMessage = (message: Message) => {
+    if (message.isUser && !isLoading) {
+      sendMessage(message.content);
+    }
+  };
+
+  const deleteMessage = (messageId: string) => {
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+  };
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -133,6 +146,8 @@ function App() {
             <div
               key={message.id}
               className={`flex gap-3 ${message.isUser ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}
+              onMouseEnter={() => setHoveredMessageId(message.id)}
+              onMouseLeave={() => setHoveredMessageId(null)}
             >
               {/* Avatar */}
               {!message.isUser && (
@@ -142,7 +157,7 @@ function App() {
               )}
               
               {/* Message Bubble */}
-              <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${message.isUser ? 'order-1' : 'order-2'}`}>
+              <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${message.isUser ? 'order-1' : 'order-2'} relative`}>
                 <div
                   className={`px-4 py-3 rounded-2xl ${
                     message.isUser
@@ -152,6 +167,32 @@ function App() {
                 >
                   <p className="text-sm leading-relaxed">{message.content}</p>
                 </div>
+                
+                {/* Message Actions */}
+                {hoveredMessageId === message.id && (
+                  <div className={`absolute top-0 flex gap-1 ${
+                    message.isUser ? '-left-20' : '-right-20'
+                  } opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
+                    {message.isUser && (
+                      <button
+                        onClick={() => resendMessage(message)}
+                        disabled={isLoading}
+                        className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Resend message"
+                      >
+                        <RotateCcw className="w-4 h-4 text-gray-600" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteMessage(message.id)}
+                      className="w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-colors duration-200"
+                      title="Delete message"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </button>
+                  </div>
+                )}
+                
                 <p className={`text-xs text-gray-500 mt-1 ${message.isUser ? 'text-right' : 'text-left'}`}>
                   {formatTime(message.timestamp)}
                 </p>
