@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search } from 'lucide-react';
+import { RefreshCw, Package, DollarSign, Calendar, AlertCircle } from 'lucide-react';
 
 interface Product {
   producto: string;
@@ -11,7 +11,6 @@ function ProductTable() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterText, setFilterText] = useState('');
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -51,8 +50,7 @@ function ProductTable() {
   }, []);
 
   const formatDate = (dateString: string) => {
-    const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -66,10 +64,6 @@ function ProductTable() {
       currency: 'USD',
     }).format(price);
   };
-
-  const filteredProducts = products.filter((product) =>
-    product.producto.toLowerCase().includes(filterText.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
@@ -100,19 +94,6 @@ function ProductTable() {
           </button>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Filter by product name..."
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all duration-200"
-            />
-          </div>
-        </div>
-
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
@@ -127,10 +108,10 @@ function ProductTable() {
             <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
             <p className="text-slate-400">Loading products...</p>
           </div>
-        ) : filteredProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center">
             <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400">{products.length === 0 ? 'No products found' : 'No products match your filter'}</p>
+            <p className="text-slate-400">No products found</p>
           </div>
         ) : (
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
@@ -159,7 +140,7 @@ function ProductTable() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProducts.map((product, index) => (
+                  {products.map((product, index) => (
                     <tr
                       key={index}
                       className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors duration-150"
@@ -183,7 +164,7 @@ function ProductTable() {
 
             <div className="px-6 py-4 bg-slate-800/80 border-t border-slate-700/50">
               <p className="text-sm text-slate-500 text-center">
-                Showing {filteredProducts.length} of {products.length} {products.length === 1 ? 'product' : 'products'} sorted by most recent
+                Showing {products.length} {products.length === 1 ? 'product' : 'products'} sorted by most recent
               </p>
             </div>
           </div>

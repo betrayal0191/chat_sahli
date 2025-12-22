@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Package } from 'lucide-react';
+import { MessageSquare, Package } from 'lucide-react';
 
 function Layout() {
   const location = useLocation();
@@ -24,6 +24,18 @@ function Layout() {
               </Link>
 
               <div className="flex items-center gap-2">
+                <Link
+                  to="/"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                    isActive('/')
+                      ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="text-sm font-medium">Chat</span>
+                </Link>
+
                 <Link
                   to="/products"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
