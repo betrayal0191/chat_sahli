@@ -3,8 +3,8 @@ import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search } from 'l
 
 interface Product {
   producto: string;
-  precio: number;
-  fecha: string;
+  precio: string;
+  date: string;
 }
 
 function ProductTable() {
@@ -31,14 +31,12 @@ function ProductTable() {
 
       const data = await response.json();
 
-      console.log('API Response:', data);
-
       const sortedProducts = [...data].sort((a, b) => {
-        if (!a.fecha && !b.fecha) return 0;
-        if (!a.fecha) return 1;
-        if (!b.fecha) return -1;
-        const dateA = new Date(a.fecha).getTime();
-        const dateB = new Date(b.fecha).getTime();
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
         return dateB - dateA;
       });
 
@@ -59,20 +57,24 @@ function ProductTable() {
     if (!dateString) {
       return 'N/A';
     }
-    const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return 'N/A';
+    }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: string) => {
+    const numPrice = parseFloat(price);
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(price);
+    }).format(numPrice);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -181,7 +183,7 @@ function ProductTable() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-slate-400 text-sm">{formatDate(product.fecha)}</div>
+                        <div className="text-slate-400 text-sm">{formatDate(product.date)}</div>
                       </td>
                     </tr>
                   ))}
