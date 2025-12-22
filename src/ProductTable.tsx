@@ -32,6 +32,9 @@ function ProductTable() {
       const data = await response.json();
 
       const sortedProducts = [...data].sort((a, b) => {
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
         const dateA = new Date(a.fecha).getTime();
         const dateB = new Date(b.fecha).getTime();
         return dateB - dateA;
@@ -51,6 +54,9 @@ function ProductTable() {
   }, []);
 
   const formatDate = (dateString: string) => {
+    if (!dateString) {
+      return 'N/A';
+    }
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', {
