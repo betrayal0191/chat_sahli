@@ -31,6 +31,8 @@ function ProductTable() {
 
       const data = await response.json();
 
+      console.log('API Response:', data);
+
       const sortedProducts = [...data].sort((a, b) => {
         if (!a.fecha && !b.fecha) return 0;
         if (!a.fecha) return 1;
