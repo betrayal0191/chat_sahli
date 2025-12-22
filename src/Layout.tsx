@@ -8,7 +8,7 @@ function Layout() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen">
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-700/50 backdrop-blur-xl bg-slate-900/80">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
