@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search } from 'lucide-react';
+import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText } from 'lucide-react';
 
 interface Product {
   producto: string;
   precio: string;
   date: string;
+  cantidad?: string | number;
+  detalles?: string;
 }
 
 function ProductTable() {
@@ -162,8 +164,20 @@ function ProductTable() {
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
                       <div className="flex items-center gap-2">
+                        <Hash className="w-4 h-4 text-emerald-400" />
+                        Cantidad
+                      </div>
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-emerald-400" />
+                        Detalles
+                      </div>
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
+                      <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-emerald-400" />
-                        Date
+                        Fecha
                       </div>
                     </th>
                   </tr>
@@ -180,6 +194,16 @@ function ProductTable() {
                       <td className="px-6 py-4">
                         <div className="text-emerald-400 font-semibold">
                           {formatPrice(product.precio)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-slate-300 text-sm">
+                          {product.cantidad ?? 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-slate-300 text-sm">
+                          {product.detalles || 'N/A'}
                         </div>
                       </td>
                       <td className="px-6 py-4">
