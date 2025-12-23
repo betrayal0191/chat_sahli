@@ -128,7 +128,7 @@ function ProductTable() {
         return {
           producto: item.producto,
           totalQuantity: item.totalQuantity,
-          averagePrice: applyMarkup(avgPrice),
+          averagePrice: avgPrice,
           detalles: item.detalles
         };
       })
@@ -337,7 +337,7 @@ function ProductTable() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-emerald-400 font-semibold">
-                            {formatPrice(product.precio)}
+                            {formatPrice(product.precio, true)}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -456,7 +456,7 @@ function ProductTable() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-emerald-400 font-semibold">
-                              {formatPrice(unit.precio)}
+                              {formatPrice(unit.precio, true)}
                             </div>
                           </td>
                           <td className="px-6 py-4">
