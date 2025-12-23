@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText, BarChart3, X, Eye } from 'lucide-react';
+import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText, BarChart3, X, Eye, Weight, Dna } from 'lucide-react';
 
 interface Product {
   producto: string;
@@ -7,6 +7,8 @@ interface Product {
   date: string;
   cantidad?: string | number;
   detalles?: string;
+  peso?: number;
+  mutacion?: string;
 }
 
 function ProductTable() {
@@ -242,6 +244,18 @@ function ProductTable() {
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
                       <div className="flex items-center gap-2">
+                        <Weight className="w-4 h-4 text-emerald-400" />
+                        Peso
+                      </div>
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
+                      <div className="flex items-center gap-2">
+                        <Dna className="w-4 h-4 text-emerald-400" />
+                        Mutación
+                      </div>
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
+                      <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-emerald-400" />
                         Detalles
                       </div>
@@ -267,6 +281,12 @@ function ProductTable() {
                           <div className="text-emerald-400 font-semibold">
                             {formatPrice(item.averagePrice.toString())}
                           </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">N/A</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">N/A</div>
                         </td>
                         <td className="px-6 py-4">
                           <button
@@ -302,6 +322,16 @@ function ProductTable() {
                         <td className="px-6 py-4">
                           <div className="text-emerald-400 font-semibold">
                             {formatPrice(product.precio)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">
+                            {product.peso ? `${product.peso}kg` : 'N/A'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">
+                            {product.mutacion || 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
