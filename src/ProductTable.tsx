@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText } from 'lucide-react';
+import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText, BarChart3 } from 'lucide-react';
 
 interface Product {
   producto: string;
@@ -14,6 +14,7 @@ function ProductTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterText, setFilterText] = useState('');
+  const [showStockView, setShowStockView] = useState(false);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -83,6 +84,30 @@ function ProductTable() {
     product.producto.toLowerCase().includes(filterText.toLowerCase())
   );
 
+  const getStockSummary = () => {
+    const stockMap = new Map<string, { producto: string; totalQuantity: number; precio: string; detalles: string }>();
+
+    products.forEach((product) => {
+      const quantity = typeof product.cantidad === 'string' ? parseFloat(product.cantidad) : (product.cantidad || 0);
+
+      if (stockMap.has(product.producto)) {
+        const existing = stockMap.get(product.producto)!;
+        existing.totalQuantity += quantity;
+      } else {
+        stockMap.set(product.producto, {
+          producto: product.producto,
+          totalQuantity: quantity,
+          precio: product.precio,
+          detalles: product.detalles || 'N/A'
+        });
+      }
+    });
+
+    return Array.from(stockMap.values()).sort((a, b) => b.totalQuantity - a.totalQuantity);
+  };
+
+  const stockSummary = getStockSummary();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 relative">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.08),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.08),transparent_50%)] -z-10" />
@@ -102,14 +127,23 @@ function ProductTable() {
             </div>
           </div>
 
-          <button
-            onClick={fetchProducts}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-all duration-200 text-sm font-medium border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowStockView(!showStockView)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all duration-200 text-sm font-medium border border-emerald-500"
+            >
+              <BarChart3 className="w-4 h-4" />
+              {showStockView ? 'Show All' : 'Show Stock Summary'}
+            </button>
+            <button
+              onClick={fetchProducts}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-all duration-200 text-sm font-medium border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         <div className="mb-6">
@@ -150,16 +184,18 @@ function ProductTable() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-700/50">
+                    {!showStockView && (
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-emerald-400" />
+                          Fecha
+                        </div>
+                      </th>
+                    )}
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
                       <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-emerald-400" />
-                        Product
-                      </div>
-                    </th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-emerald-400" />
-                        Price
+                        Producto
                       </div>
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
@@ -170,54 +206,85 @@ function ProductTable() {
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-emerald-400" />
-                        Detalles
+                        <DollarSign className="w-4 h-4 text-emerald-400" />
+                        Precio
                       </div>
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-emerald-400" />
-                        Fecha
+                        <FileText className="w-4 h-4 text-emerald-400" />
+                        Detalles
                       </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProducts.map((product, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors duration-150"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="text-slate-100 font-medium">{product.producto}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-emerald-400 font-semibold">
-                          {formatPrice(product.precio)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-slate-300 text-sm">
-                          {product.cantidad ?? 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-slate-300 text-sm">
-                          {product.detalles || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-slate-400 text-sm">{formatDate(product.date)}</div>
-                      </td>
-                    </tr>
-                  ))}
+                  {showStockView ? (
+                    stockSummary.map((item, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors duration-150"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="text-slate-100 font-medium">{item.producto}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-emerald-400 font-semibold text-lg">
+                            {item.totalQuantity}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-emerald-400 font-semibold">
+                            {formatPrice(item.precio)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">
+                            {item.detalles}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    filteredProducts.map((product, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors duration-150"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="text-slate-400 text-sm">{formatDate(product.date)}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-100 font-medium">{product.producto}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">
+                            {product.cantidad ?? 'N/A'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-emerald-400 font-semibold">
+                            {formatPrice(product.precio)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-slate-300 text-sm">
+                            {product.detalles || 'N/A'}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
             <div className="px-6 py-4 bg-slate-800/80 border-t border-slate-700/50">
               <p className="text-sm text-slate-500 text-center">
-                Showing {filteredProducts.length} of {products.length} {products.length === 1 ? 'product' : 'products'} sorted by most recent
+                {showStockView
+                  ? `Showing ${stockSummary.length} unique ${stockSummary.length === 1 ? 'product' : 'products'} with aggregated stock`
+                  : `Showing ${filteredProducts.length} of ${products.length} ${products.length === 1 ? 'product' : 'products'} sorted by most recent`
+                }
               </p>
             </div>
           </div>
