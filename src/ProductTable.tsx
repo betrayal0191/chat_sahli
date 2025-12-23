@@ -128,7 +128,7 @@ function ProductTable() {
         return {
           producto: item.producto,
           totalQuantity: item.totalQuantity,
-          averagePrice: avgPrice,
+          averagePrice: applyMarkup(avgPrice),
           detalles: item.detalles
         };
       })
