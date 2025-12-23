@@ -76,8 +76,21 @@ function ProductTable() {
     }
   };
 
-  const formatPrice = (price: string) => {
-    const numPrice = parseFloat(price);
+  const applyMarkup = (price: number): number => {
+    if (price < 0.50) {
+      return price + 0.15;
+    } else if (price < 1.00) {
+      return price + 0.20;
+    } else {
+      return price * 1.25;
+    }
+  };
+
+  const formatPrice = (price: string, applyMarkupFlag: boolean = false) => {
+    let numPrice = parseFloat(price);
+    if (applyMarkupFlag) {
+      numPrice = applyMarkup(numPrice);
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -110,12 +123,15 @@ function ProductTable() {
     });
 
     return Array.from(stockMap.values())
-      .map(item => ({
-        producto: item.producto,
-        totalQuantity: item.totalQuantity,
-        averagePrice: item.prices.reduce((sum, p) => sum + p, 0) / item.prices.length,
-        detalles: item.detalles
-      }))
+      .map(item => {
+        const avgPrice = item.prices.reduce((sum, p) => sum + p, 0) / item.prices.length;
+        return {
+          producto: item.producto,
+          totalQuantity: item.totalQuantity,
+          averagePrice: applyMarkup(avgPrice),
+          detalles: item.detalles
+        };
+      })
       .sort((a, b) => b.totalQuantity - a.totalQuantity);
   };
 
@@ -239,7 +255,7 @@ function ProductTable() {
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-emerald-400" />
-                        Precio
+                        {showStockView ? 'Precio Promediado' : 'Precio'}
                       </div>
                     </th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-slate-300 bg-slate-800/80">
