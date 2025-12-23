@@ -85,25 +85,34 @@ function ProductTable() {
   );
 
   const getStockSummary = () => {
-    const stockMap = new Map<string, { producto: string; totalQuantity: number; precio: string; detalles: string }>();
+    const stockMap = new Map<string, { producto: string; totalQuantity: number; prices: number[]; detalles: string }>();
 
     products.forEach((product) => {
       const quantity = typeof product.cantidad === 'string' ? parseFloat(product.cantidad) : (product.cantidad || 0);
+      const price = parseFloat(product.precio);
 
       if (stockMap.has(product.producto)) {
         const existing = stockMap.get(product.producto)!;
         existing.totalQuantity += quantity;
+        existing.prices.push(price);
       } else {
         stockMap.set(product.producto, {
           producto: product.producto,
           totalQuantity: quantity,
-          precio: product.precio,
+          prices: [price],
           detalles: product.detalles || 'N/A'
         });
       }
     });
 
-    return Array.from(stockMap.values()).sort((a, b) => b.totalQuantity - a.totalQuantity);
+    return Array.from(stockMap.values())
+      .map(item => ({
+        producto: item.producto,
+        totalQuantity: item.totalQuantity,
+        averagePrice: item.prices.reduce((sum, p) => sum + p, 0) / item.prices.length,
+        detalles: item.detalles
+      }))
+      .sort((a, b) => b.totalQuantity - a.totalQuantity);
   };
 
   const stockSummary = getStockSummary();
@@ -235,7 +244,7 @@ function ProductTable() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-emerald-400 font-semibold">
-                            {formatPrice(item.precio)}
+                            {formatPrice(item.averagePrice.toString())}
                           </div>
                         </td>
                         <td className="px-6 py-4">
