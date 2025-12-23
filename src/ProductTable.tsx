@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText, BarChart3 } from 'lucide-react';
+import { RefreshCw, Package, DollarSign, Calendar, AlertCircle, Search, Hash, FileText, BarChart3, X, Eye } from 'lucide-react';
 
 interface Product {
   producto: string;
@@ -15,6 +15,8 @@ function ProductTable() {
   const [error, setError] = useState<string | null>(null);
   const [filterText, setFilterText] = useState('');
   const [showStockView, setShowStockView] = useState(false);
+  const [selectedProductName, setSelectedProductName] = useState<string | null>(null);
+  const [detailsFilterText, setDetailsFilterText] = useState('');
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -116,6 +118,25 @@ function ProductTable() {
   };
 
   const stockSummary = getStockSummary();
+
+  const getProductUnits = (productName: string) => {
+    return products
+      .filter((product) => product.producto === productName)
+      .sort((a, b) => {
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return dateB - dateA;
+      });
+  };
+
+  const selectedProductUnits = selectedProductName
+    ? getProductUnits(selectedProductName).filter((unit) =>
+        (unit.detalles || 'N/A').toLowerCase().includes(detailsFilterText.toLowerCase())
+      )
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 relative">
@@ -248,9 +269,16 @@ function ProductTable() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-slate-300 text-sm">
-                            {item.detalles}
-                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedProductName(item.producto);
+                              setDetailsFilterText('');
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white rounded-lg transition-all duration-200 text-sm border border-slate-600/50 hover:border-slate-500"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Details
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -295,6 +323,113 @@ function ProductTable() {
                   : `Showing ${filteredProducts.length} of ${products.length} ${products.length === 1 ? 'product' : 'products'} sorted by most recent`
                 }
               </p>
+            </div>
+          </div>
+        )}
+
+        {selectedProductName && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+                <div>
+                  <h2 className="text-xl font-bold text-white">{selectedProductName}</h2>
+                  <p className="text-slate-400 text-sm mt-1">All units and details</p>
+                </div>
+                <button
+                  onClick={() => setSelectedProductName(null)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors duration-200"
+                >
+                  <X className="w-5 h-5 text-slate-400 hover:text-white" />
+                </button>
+              </div>
+
+              <div className="px-6 py-4 border-b border-slate-700">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Filter by details..."
+                    value={detailsFilterText}
+                    onChange={(e) => setDetailsFilterText(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 bg-slate-800/95 backdrop-blur-sm">
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-emerald-400" />
+                          Fecha
+                        </div>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <Hash className="w-4 h-4 text-emerald-400" />
+                          Cantidad
+                        </div>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-emerald-400" />
+                          Precio
+                        </div>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-semibold text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-emerald-400" />
+                          Detalles
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedProductUnits.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-12 text-center">
+                          <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                          <p className="text-slate-400">No units match your filter</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      selectedProductUnits.map((unit, index) => (
+                        <tr
+                          key={index}
+                          className="border-b border-slate-700/30 hover:bg-slate-700/30 transition-colors duration-150"
+                        >
+                          <td className="px-6 py-4">
+                            <div className="text-slate-400 text-sm">{formatDate(unit.date)}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-slate-300 text-sm">
+                              {unit.cantidad ?? 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-emerald-400 font-semibold">
+                              {formatPrice(unit.precio)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-slate-300 text-sm">
+                              {unit.detalles || 'N/A'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="px-6 py-4 bg-slate-800/80 border-t border-slate-700">
+                <p className="text-sm text-slate-500 text-center">
+                  Showing {selectedProductUnits.length} of {getProductUnits(selectedProductName).length} {getProductUnits(selectedProductName).length === 1 ? 'unit' : 'units'}
+                </p>
+              </div>
             </div>
           </div>
         )}
